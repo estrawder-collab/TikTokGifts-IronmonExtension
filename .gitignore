@@ -1,0 +1,8 @@
+TikTokGifts/gifts.txt
+TikTokGifts/config.txt
+TikTokGifts/released_pokemon.txt
+TikTokGifts/TikTokGifts-before-update.lua.txt
+TikTokGifts/bridge/node_modules/
+TikTokGifts/bridge/username.txt
+TikTokGifts/bridge/apikey.txt
+*.bak

@@ -1,0 +1,14 @@
+{
+  "name": "tiktok-ironmon-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sends TikTok LIVE gifts to the TikTok Gifts Ironmon Tracker extension",
+  "main": "tiktok-bridge.js",
+  "scripts": {
+    "start": "node tiktok-bridge.js",
+    "test-gift": "node tiktok-bridge.js --test \"Hat and Mustache\" 30 1"
+  },
+  "dependencies": {
+    "tiktok-live-connector": "^2.0.0"
+  }
+}
