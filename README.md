@@ -352,7 +352,13 @@ You don't need this to use the extension. It is a separate, optional ROM patch f
 
 Nat. Dex FireRed 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in.
 
-**File:** [`optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps). It is not in the release zip.
+Everything for it is in the [`optional/natdex-abilities-patch`](optional/natdex-abilities-patch) folder. It is not in the release zip.
+
+| File | What it is |
+| --- | --- |
+| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch. |
+| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROM. |
+| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched ROM correctly. |
 
 ### What it changes
 
@@ -370,16 +376,34 @@ The extension detects the patched ROM by itself. Nothing needs to be switched on
 - Random move and ability gifts pick from the much larger set that now works.
 - Exp. Candy gifts put the real candy in your bag instead of giving the points directly (see `expCandyMode`).
 
-### How to apply it
+### How to set it up
 
-1. Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
-2. Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match.
-3. The result has CRC32 `EBD4339B`. Start a new game on it. Save states made on the unpatched ROM won't load.
+1. **Make the base ROM.** Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
+2. **Apply the patch.** Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `EBD4339B`.
+3. **Randomize with the matching randomizer.** Use `randomizer_natdex_1.2.2_abilities.jar` with the patched ROM and your usual Nat. Dex settings file. If the Tracker makes your ROMs for you (Quickload), point its randomizer and source ROM settings at this jar and the patched ROM. The randomizer needs Java.
+4. **Add the Tracker extension.** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too.
+5. **Start a new game.** Save states made on the unpatched ROM won't work.
+
+### The randomizer
+
+The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. The one here is that same randomizer, changed to read the patched ROM and to hand out the moves and items the patch adds.
+
+- Use it only with the patched ROM. It no longer reads an unpatched FireRed 1.1 or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
+- It is a modified copy of the Universal Pokemon Randomizer ZX build that ships with NatDexExtension, shared under the same GPL-3.0 license. The exact changes are listed in the [folder's README](optional/natdex-abilities-patch/README.md).
+
+### The Tracker extension
+
+Without it, the Tracker labels moves physical or special by type and calls some of the newer moves and abilities "not implemented", even though they work in the game. `NatDexSplitCategories.lua` fixes what the Tracker shows:
+
+- each move's real physical or special category;
+- the type, power, accuracy, PP and description of the moves the patch implements;
+- the descriptions of the abilities the patch implements;
+- the names of the new held items and Exp. Candies.
+
+It does nothing on a ROM without the patch, so it is safe to leave enabled.
 
 ### Before you use it
 
-- **Randomizing needs a matching randomizer.** The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. A matching randomizer build is not included in this repository.
-- **The Tracker doesn't know about the changes.** Without extra help it still labels moves physical or special by type, and it may describe some newer moves as not implemented, even though they work in the game.
 - **It has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
 - **It is an unofficial fan modification.** It isn't made or supported by CyanSMP64 or the Nat. Dex project, so please don't report its bugs to them. Report them here instead.
 - **It is a patch, not a game.** No ROM is included or will be. You supply your own game file.
@@ -398,6 +422,7 @@ This extension only exists because of other people's work:
 - **The Ironmon Tracker** was created by Besteon, with UTDZac and the rest of the [Tracker's contributors](https://github.com/besteon/Ironmon-Tracker). This extension runs inside it and uses its extension tools.
 - **The Nat. Dex ROM hack and NatDexExtension** are by [CyanSMP64](https://github.com/CyanSMP64/NatDexExtension) and that project's contributors. The Nat. Dex rules used here come from its wiki. The optional Abilities patch is a modification of their ROM hack.
 - **pokeemerald-expansion** by [rh-hideout](https://github.com/rh-hideout/pokeemerald-expansion) and its contributors. The 150 move animations in the optional Abilities patch were ported from it.
+- **Universal Pokemon Randomizer ZX** by [Ajarmar](https://github.com/Ajarmar/universal-pokemon-randomizer-zx), with significant contributions from darkeye and cleartonic, based on the Universal Pokemon Randomizer by Dabomstew. The optional patch's randomizer is a modified copy of the build that ships with NatDexExtension.
 
 Special thanks:
 
@@ -407,4 +432,4 @@ Not affiliated with or endorsed by any of the people or projects above, or by Ti
 
 ## License
 
-MIT. See the `LICENSE` file. The license covers the extension and the bridge. The optional Abilities patch is a fan modification of other people's work and is shared as it is, with no license of its own.
+MIT. See the `LICENSE` file. The license covers the extension and the bridge. The optional Abilities patch is a fan modification of other people's work and is shared as it is, with no license of its own. Its randomizer is under the GNU General Public License, version 3; the license text is in the patch's folder.
