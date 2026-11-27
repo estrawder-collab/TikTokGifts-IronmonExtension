@@ -16,6 +16,8 @@ By **Demon_Quingar91**. Latest version: [Releases](https://github.com/estrawder-
 - **[Node.js](https://nodejs.org)** (current LTS version) for the bridge.
 - **TikFinity Desktop** (free) or **TikOps** to pass your stream's gifts to the bridge.
 
+Not needed, but available: the [Nat. Dex Abilities patch](#optional-nat-dex-abilities-patch), a ROM patch that makes the newer abilities, moves and items actually work in Nat. Dex FireRed. The extension runs fine without it.
+
 ## Setup (Windows, no typing commands)
 
 The bridge doesn't connect to TikTok itself anymore. TikTok's connection library now requires a paid signing plan, so the bridge gets gifts from a streaming tool you run instead:
@@ -344,6 +346,43 @@ Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDe
 - The bridge uses the unofficial [`tiktok-live-connector`](https://www.npmjs.com/package/tiktok-live-connector) library. If TikTok changes something and it stops connecting, run `npm update` in the bridge folder.
 - Make a save state before testing.
 
+## Optional: Nat. Dex Abilities patch
+
+You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed and want the newer mechanics to do something.
+
+Nat. Dex FireRed 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in.
+
+**File:** [`optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps). It is not in the release zip.
+
+### What it changes
+
+- **Abilities:** more than 230 Gen 4 to 9 abilities now work in battle. That includes the terrain abilities and terrains themselves, form changes such as Stance Change and Disguise, and species-specific abilities, which work on whichever Pokémon rolls them in a randomized game.
+- **Moves:** 482 Gen 4 to 9 moves are implemented, 352 damaging and 130 status, along with the Toxic Spikes hazard.
+- **Physical/special split:** each move is physical or special on its own, as in the newer games, instead of by type.
+- **Animations:** 150 of the newer moves have their own animations.
+- **Held items:** 50 single-use held items, including Focus Sash, Weakness Policy, Air Balloon, Power Herb, Eject Button, Throat Spray, the terrain seeds, seven Gems and the 18 type-resist berries.
+- **Exp. Candies:** XS, S, M, L and XL exist as real bag items worth 100, 800, 3,000, 10,000 and 30,000 Exp. Points. They are used like a Rare Candy.
+
+### What it does for the extension
+
+The extension detects the patched ROM by itself. Nothing needs to be switched on.
+
+- Random move and ability gifts pick from the much larger set that now works.
+- Exp. Candy gifts put the real candy in your bag instead of giving the points directly (see `expCandyMode`).
+
+### How to apply it
+
+1. Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
+2. Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match.
+3. The result has CRC32 `EBD4339B`. Start a new game on it. Save states made on the unpatched ROM won't load.
+
+### Before you use it
+
+- **Randomizing needs a matching randomizer.** The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. A matching randomizer build is not included in this repository.
+- **The Tracker doesn't know about the changes.** Without extra help it still labels moves physical or special by type, and it may describe some newer moves as not implemented, even though they work in the game.
+- **It has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
+- **It is an unofficial fan modification.** It isn't made or supported by CyanSMP64 or the Nat. Dex project, so please don't report its bugs to them. Report them here instead.
+- **It is a patch, not a game.** No ROM is included or will be. You supply your own game file.
 
 ## Privacy
 
@@ -357,7 +396,8 @@ This extension only exists because of other people's work:
 
 - **The IronMon Challenge** was created by [iateyourpie](https://www.twitch.tv/iateyourpie). The rules, and the banned-move lists the ruleset options use, are kept up by the IronMon community at [ironmon.gg](https://ironmon.gg).
 - **The Ironmon Tracker** was created by Besteon, with UTDZac and the rest of the [Tracker's contributors](https://github.com/besteon/Ironmon-Tracker). This extension runs inside it and uses its extension tools.
-- **The Nat. Dex ROM hack and NatDexExtension** are by [CyanSMP64](https://github.com/CyanSMP64/NatDexExtension) and that project's contributors. The Nat. Dex rules used here come from its wiki.
+- **The Nat. Dex ROM hack and NatDexExtension** are by [CyanSMP64](https://github.com/CyanSMP64/NatDexExtension) and that project's contributors. The Nat. Dex rules used here come from its wiki. The optional Abilities patch is a modification of their ROM hack.
+- **pokeemerald-expansion** by [rh-hideout](https://github.com/rh-hideout/pokeemerald-expansion) and its contributors. The 150 move animations in the optional Abilities patch were ported from it.
 
 Special thanks:
 
@@ -367,4 +407,4 @@ Not affiliated with or endorsed by any of the people or projects above, or by Ti
 
 ## License
 
-MIT. See the `LICENSE` file.
+MIT. See the `LICENSE` file. The license covers the extension and the bridge. The optional Abilities patch is a fan modification of other people's work and is shared as it is, with no license of its own.
