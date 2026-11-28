@@ -34,7 +34,7 @@ local function TikTokGifts()
 	local self = {}
 
 	-- ======================= METADATA =======================
-	self.version = "1.17.0"
+	self.version = "1.18.0"
 	self.name = "TikTok Gifts"
 	self.author = "Demon_Quingar91"
 	self.description = "TikTok LIVE gifts affect your game: level ups, EVs/IVs, new moves, curses, an Elite Four warp and more. Needs the bridge running (see README)."
@@ -175,6 +175,11 @@ local function TikTokGifts()
 			abilities = 9,  -- randomizeAbility (abilities first appeared in Gen 3, so 1-3 mean the same)
 			items = 9,      -- below 8, Exp. Candy gifts give the Exp. Points instead of the item
 		},
+		-- Nat. Dex games only: Mega Evolutions, regional forms and other alternate
+		-- forms (the extra species the ROM keeps after Pecharunt) can be picked by
+		-- replaceLead and for surprise Gym Leader teams. They follow the ruleset
+		-- (BST limit, legendaries) and the generation limit like any other Pokemon.
+		alternateForms = true,
 		repeatOtherEffects = 1,      -- how many times other effects fire for a streak (e.g. 5x gift)
 		maxQueueSize = 100,          -- extra gifts are dropped if the queue fills up
 		secondsBetweenEffects = 2,   -- spacing so viewers can see each effect land
@@ -623,6 +628,13 @@ local function TikTokGifts()
 			}
 			findNatDexEvoTable(g)
 			if natdexEmerald then g.localTime = findNatDexLocalTime(g) end
+			-- Every species slot the ROM has (NUM_SPECIES): the move names start
+			-- right where the species names end. 1284 in Nat. Dex 1.2.x, of which
+			-- 1051-1283 are Megas and other forms.
+			local slots = (read32(0x08000148) - g.names) / (g.nameLen + 1)
+			if slots == math.floor(slots) and slots > g.maxSpecies + 1 and slots <= 4000 then
+				g.speciesCount = math.floor(slots)
+			end
 			-- Exp. Candy items, if this ROM has them (found by item name).
 			-- Item entries are {name, u16 id, ...}; the name is 14 or 20 bytes.
 			g.items, g.itemCount = read32(0x080001C8), read16(0x080004B8)
@@ -1006,6 +1018,119 @@ local function TikTokGifts()
 		return math.min(top, lasts[n])
 	end
 
+	-- Nat. Dex Megas and other forms (IDs above G.maxSpecies), in blocks:
+	-- { last ID of the block, generation that introduced those forms }
+	local FORM_GENS = {
+		{ 1100, 6 }, -- Megas, Primal Kyogre/Groudon
+		{ 1118, 7 }, -- Alolan forms
+		{ 1153, 8 }, -- Galarian and Hisuian forms
+		{ 1155, 9 }, -- Paldean Tauros, Wooper
+		{ 1157, 7 }, -- Pikachu (cap, partner)
+		{ 1159, 9 }, -- Paldean Tauros breeds
+		{ 1160, 7 }, -- partner Eevee
+		{ 1161, 4 }, -- spiky-eared Pichu
+		{ 1167, 3 }, -- Castform, Deoxys
+		{ 1177, 4 }, -- Burmy, Wormadam, Cherrim, Rotom
+		{ 1179, 8 }, -- Origin Dialga, Palkia
+		{ 1181, 4 }, -- Origin Giratina, Sky Shaymin
+		{ 1182, 5 }, { 1183, 8 }, -- Basculin: blue-striped, white-striped
+		{ 1184, 5 }, { 1185, 8 }, -- Darmanitan Zen Mode: Unovan, Galarian
+		{ 1191, 5 }, -- Therian forms, Kyurem, Meloetta
+		{ 1192, 7 }, -- Ash-Greninja
+		{ 1204, 6 }, -- Floette, Meowstic, Aegislash, Pumpkaboo, Gourgeist, Zygarde, Hoopa
+		{ 1214, 7 }, -- Oricorio, Lycanroc, Wishiwashi, Minior, Necrozma
+		{ 1224, 8 }, -- Toxtricity ... Calyrex riders
+		{ 1225, 9 }, -- Bloodmoon Ursaluna
+		{ 1227, 8 }, -- Basculegion, Therian Enamorus
+		{ 1235, 9 }, -- Oinkologne ... Terapagos
+		{ 1236, 7 }, -- Battle Bond Greninja
+		{ 1283, 9 }, -- Squawkabilly, the newest Megas
+	}
+	-- A few slots by name, to confirm the ROM keeps its forms in this order
+	local FORM_ANCHORS = {
+		[1051] = "venusaur", [1100] = "groudon", [1118] = "marowak", [1153] = "decidueye",
+		[1161] = "pichu", [1204] = "hoopa", [1237] = "squawkabilly", [1283] = "meowstic",
+	}
+
+	local function formGeneration(id)
+		for _, block in ipairs(FORM_GENS) do
+			if id <= block[1] then return block[2] end
+		end
+		return 9
+	end
+
+	-- First and last ID of the Megas/forms, or nil if this game has none
+	local function formRange()
+		if not (G and G.natdex and G.speciesCount) then return nil end
+		return G.maxSpecies + 1, G.speciesCount - 1
+	end
+
+	-- What to call a species in messages. Forms share their base species' name
+	-- in the ROM, so say which form it is ("Mega Charizard X", "Alolan Vulpix").
+	local FORM_LABELS = {
+		{ 1098, "Mega %s" }, { 1100, "Primal %s" }, { 1118, "Alolan %s" }, { 1137, "Galarian %s" },
+		{ 1153, "Hisuian %s" }, { 1155, "Paldean %s" }, { 1157, "%s (alternate form)" }, { 1159, "Paldean %s" },
+		{ 1237, "%s (alternate form)" }, { 1283, "Mega %s" },
+	}
+	local FORM_SUFFIXES = {
+		[1052] = " X", [1053] = " Y", [1064] = " X", [1065] = " Y",
+		[1264] = " X", [1265] = " Y", [1267] = " Z", [1269] = " Z", [1270] = " Z",
+	}
+	local function speciesLabel(id)
+		local name = speciesName(id)
+		local first, last = formRange()
+		if not first or id < first or id > last then return name end
+		if not G.formLayoutUnknown then
+			for _, block in ipairs(FORM_LABELS) do
+				if id <= block[1] then return string.format(block[2], name) .. (FORM_SUFFIXES[id] or "") end
+			end
+		end
+		return name .. " (alternate form)"
+	end
+
+	-- The Megas and other forms a random pick may use right now: finished
+	-- entries only, within the generation limit. Empty when switched off.
+	local function formSpecies()
+		local list = {}
+		local first, last = formRange()
+		if not first or SETTINGS.alternateForms == false then return list end
+		local gen = generationSetting("pokemon")
+		local limited = gen < #GEN_LAST.natdex.pokemon and not G.genLayoutUnknown
+		if limited and G.formLayoutUnknown then return list end
+		for id = first, last do
+			if not limited or formGeneration(id) <= gen then
+				local bs = readBaseStats(id)
+				-- growth 0-5 and an exp. yield of 2+ mark a finished entry
+				if bs and bs.hp > 0 and bs.growth <= 5 and read16(bs.addr + 0x1E) >= 2 then
+					list[#list + 1] = id
+				end
+			end
+		end
+		return list
+	end
+
+	-- Called once the ROM is known: checks where the forms are and says so
+	local function reportForms()
+		local first, last = formRange()
+		if not first then return end
+		G.formLayoutUnknown = nil
+		if G.romOk then
+			for id, name in pairs(FORM_ANCHORS) do
+				if id > last or string.lower(speciesName(id)) ~= name then G.formLayoutUnknown = true end
+			end
+		end
+		if SETTINGS.alternateForms == false then
+			log("Megas and other forms: off (alternateForms = false)")
+			return
+		end
+		local count = #formSpecies()
+		if count > 0 then
+			log(string.format("Megas and other forms: %d in the pool for replaceLead (ruleset permitting) and Gym Leader teams", count))
+		elseif G.formLayoutUnknown then
+			log("Megas and other forms are left out while generationLimit is set: this ROM orders them differently than expected.")
+		end
+	end
+
 	-- Called once the ROM is known: checks the layout and says what is limited
 	local function reportGenerationLimit()
 		local lasts = GEN_LAST[G.natdex and "natdex" or "vanilla"].pokemon
@@ -1139,9 +1264,15 @@ local function TikTokGifts()
 			for _, n in ipairs(SUB_LEGENDARY_NAMES) do wanted[n] = true end
 		end
 		if G.romOk then
-			for id = 1, G.maxSpecies do
+			-- Megas and other forms carry their base species' name, so a
+			-- legendary's forms are excluded with it
+			local _, lastForm = formRange()
+			for id = 1, lastForm or G.maxSpecies do
 				local key = string.lower(speciesName(id)):gsub("[^%a]", "")
-				if wanted[key] then r.legendary[id] = true found = found + 1 end
+				if wanted[key] then
+					r.legendary[id] = true
+					if id <= G.maxSpecies then found = found + 1 end
+				end
 			end
 		end
 		rules = r
@@ -1192,14 +1323,16 @@ local function TikTokGifts()
 
 	local function randomSpecies(forPlayer)
 		local top = generationCap("pokemon")
+		-- IDs 252-276 are placeholder slots in Gen 3 (and in the Nat. Dex hack)
+		local baseCount = top <= 251 and top or top - 25
+		-- Nat. Dex: Megas and other forms are picked like any other species
+		local forms = formSpecies()
 		for _ = 1, 1000 do
-			-- IDs 252-276 are placeholder slots in Gen 3 (and in the Nat. Dex hack)
-			local id
-			if top <= 251 then
-				id = math.random(1, top)
-			else
-				id = math.random(1, top - 25)
-				if id > 251 then id = id + 25 end
+			local id = math.random(1, baseCount + #forms)
+			if id > baseCount then
+				id = forms[id - baseCount]
+			elseif id > 251 then
+				id = id + 25
 			end
 			local bs = readBaseStats(id)
 			if bs and bs.hp > 0 and bs.growth <= 5 and (not forPlayer or rulesetAllowsSpecies(id, bs)) then
@@ -1209,7 +1342,7 @@ local function TikTokGifts()
 		return nil
 	end
 
-	local function nameLead(mon) return speciesName(species(mon)) end
+	local function nameLead(mon) return speciesLabel(species(mon)) end
 
 	-- ======================= LEVEL-UP RULES =================
 	-- What the game does after a Rare Candy, done directly on the data:
@@ -1459,7 +1592,7 @@ local function TikTokGifts()
 			local target = SETTINGS.levelUpEvolves and evolutionTarget(mon)
 			if target then
 				evolveInto(mon, target)
-				report.evolved[#report.evolved + 1] = speciesName(target)
+				report.evolved[#report.evolved + 1] = speciesLabel(target)
 				if SETTINGS.levelUpLearnsMoves then learnLevelMoves(mon, l, report.learned, report.skipped) end
 			end
 		end
@@ -1899,7 +2032,7 @@ local function TikTokGifts()
 			local target = SETTINGS.levelUpEvolves and evolutionTarget(mon)
 			if target then
 				evolveInto(mon, target)
-				evolved[#evolved + 1] = speciesName(target)
+				evolved[#evolved + 1] = speciesLabel(target)
 				if SETTINGS.levelUpLearnsMoves then learnLevelMoves(mon, newLevel, learned, skipped) end
 			end
 		end
@@ -2078,7 +2211,7 @@ local function TikTokGifts()
 		local moveNames = {}
 		for i = 1, 4 do moveNames[i] = moveName(moves[i]) end
 		return true, string.format("%s was released! Say hi to Lv.%d %s (%s)",
-			oldName, lv, speciesName(sp), table.concat(moveNames, ", "))
+			oldName, lv, speciesLabel(sp), table.concat(moveNames, ", "))
 	end
 
 	-- ======================= GYM LEADER AMBUSH ==============
@@ -2249,6 +2382,13 @@ local function TikTokGifts()
 				end
 			end
 		end
+		-- Nat. Dex: Megas and other forms of the leader's type
+		for _, id in ipairs(formSpecies()) do
+			local bs = readBaseStats(id)
+			for _, t in ipairs(types) do
+				if bs.type1 == t or bs.type2 == t then pool[#pool + 1] = id break end
+			end
+		end
 		return pool
 	end
 
@@ -2351,7 +2491,7 @@ local function TikTokGifts()
 				abilityBit = math.random(0, 1), language = 2, otName = otName,
 				origins = math.min(lv, 127) + (G.originGame or 4) * 128 + 4 * 2048, -- met level, game, Poke Ball
 			}
-			names[i] = speciesName(sp)
+			names[i] = speciesLabel(sp)
 		end
 
 		-- The event script lives in the upper part of the script engine's own call
@@ -2657,6 +2797,7 @@ local function TikTokGifts()
 		{ key = "eliteFourBoostLead", kind = "bool", label = "Elite Four warp boosts your lead" },
 		{ key = "gymLeaderLevelBonus", kind = "int", min = -50, max = 50, label = "Gym Leader: levels above your best" },
 		{ key = "gymLeaderEVs", kind = "choice", label = "Gym Leader EVs", choices = { "all", "legal" } },
+		{ key = "alternateForms", kind = "bool", label = "Nat. Dex: random picks include Megas and other forms" },
 	}
 
 	function Options.get(key)
@@ -2865,6 +3006,7 @@ local function TikTokGifts()
 		if G then
 			G.genLayoutUnknown = nil
 			reportGenerationLimit()
+			reportForms()
 			setupRuleset()
 		end
 	end
@@ -3165,6 +3307,7 @@ local function TikTokGifts()
 		control("gymLeaderLevelBonus", 2, 370)
 		control("gymLeaderEVs", 2, 398)
 		control("eliteFourBoostLead", 2, 426)
+		control("alternateForms", 2, 450)
 
 		-- Reads the window; returns the number of values that were rejected and the first reason
 		local function readAll()
@@ -3389,6 +3532,7 @@ local function TikTokGifts()
 		G = detectGame()
 		if G then
 			reportGenerationLimit()
+			reportForms()
 			setupRuleset()
 		end
 		if SETTINGS.retryHotkey and event and event.onframeend then

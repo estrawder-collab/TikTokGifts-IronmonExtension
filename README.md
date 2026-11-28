@@ -59,7 +59,7 @@ Everything most people want to change can be set without opening a file. In the 
 - **Generation limit:** the highest generation allowed for random Pokémon, moves, abilities and items.
 - **Level-ups and Exp. Candies:** whether a level-up can evolve, teach moves and raise friendship; whether you're asked which move to forget when all four slots are full; how candy gifts are given; the most levels or items one gift can give.
 - **Gift handling:** how streaks repeat, the pause between effects, and how long held gifts are retried.
-- **Effect details:** modes for the ability and EV effects, the level of a replacement Pokémon, STAB move power range, and the surprise Gym Leader's strength.
+- **Effect details:** modes for the ability and EV effects, the level of a replacement Pokémon, STAB move power range, the surprise Gym Leader's strength, and whether Mega Evolutions and other alternate forms can be picked on Nat. Dex games.
 
 Opening Options takes the Tracker back to its main Pokémon screen, and the Tracker stays clickable while the window is open (BizHawk 2.9 or newer), so you can watch your Pokémon change as you save settings or test effects. Drag the window wherever suits your stream layout: it stays there. Saving, testing an effect and editing rules all update the window in place, and its position is remembered the next time it opens, even after a restart. The move question window remembers its own spot the same way.
 
@@ -186,6 +186,8 @@ You choose which set applies; the extension doesn't switch on its own. If a Nat.
 | Standard, Ultimate | No legendary, sub-legendary or mythical Pokémon. | No strong legendary or mythical Pokémon (50 species on a Nat. Dex ROM). Sub-legendaries are allowed. |
 | Kaizo, Super Kaizo, Survival | The same, and BST 598 or less ("No using 599+ BST Pokémon"). | The same, and BST 599 or less ("600 BST or higher" is banned). |
 
+On Nat. Dex games, Mega Evolutions and other alternate forms follow the same rules. A legendary's forms are excluded with it (Mega Mewtwo, Primal Kyogre, the Galarian birds under the plain rulesets, and so on), and the BST limit is checked against the form's own stats, so the stronger Megas are out under Kaizo, Super Kaizo and Survival (38 of the 94 Megas have a BST under 600).
+
 **Random moves** (`teachRandomMove`, `teachStabMove`, a new Pokémon's moves)
 
 | Ruleset | Never given |
@@ -241,6 +243,8 @@ That example is a Gen 1–3 run. Use `5` for Gen 1–5, and so on. `9` (the defa
 | `items` | Below 8, Exp. Candy gifts give the Exp. Points directly instead of the item, since the candies are Gen 8 items. Healing items are all Gen 1–3 already. |
 
 When a limit is active, the Lua Console confirms it at startup, for example `Ruleset limit: pokemon Gen 1-3, moves Gen 1-3`.
+
+On Nat. Dex games, a Mega Evolution or other alternate form counts as the generation that introduced the form, not its base species: Megas and Primals are Gen 6 (the newest Megas are Gen 9), Alolan forms Gen 7, Galarian and Hisuian forms Gen 8, Paldean forms Gen 9. A Gen 1–5 run therefore gets no Megas, and a Gen 1–3 run only gets Castform's and Deoxys's forms.
 
 ### What neither setting changes
 
@@ -364,7 +368,8 @@ What was tested: all seven US ROMs (Emerald, Ruby v1.0–v1.2, Sapphire v1.0–v
 ## Nat. Dex compatibility
 
 Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDexExtension) (Nat. Dex FireRed and Nat. Dex Emerald 1.2.x). It detects a Nat. Dex ROM the same way that extension does and reads addresses and struct sizes from the ROM header, so it doesn't matter which extension loads first.
-- Random Pokémon (`replaceLead`) come from all 1,050 base species. Megas and other alternate forms are skipped.
+- Random Pokémon (`replaceLead`) and the surprise Gym Leader's team come from all 1,025 base species plus the 233 Mega Evolutions and other alternate forms the ROM has (Megas, Primals, Alolan, Galarian, Hisuian and Paldean forms, Rotom's appliances, Therian forms and the rest). Every one of them has the same chance, so about 1 pick in 5 is a form. Messages say which form it is ("Mega Charizard X", "Alolan Vulpix"); the in-game name is the base species' name, as it is everywhere else in Nat. Dex. Forms follow your ruleset and generation limit. To leave them out, untick **Nat. Dex: random picks include Megas and other forms** in Options (`alternateForms = false`).
+- A Pokémon handed out as a Mega or other form stays that form. It is an ordinary species in Nat. Dex, the same way the Nat. Dex randomizer places forms in the wild, on trainers and as randomized evolutions.
 - Random moves and abilities only come from the ones that work in your ROM. Nat. Dex 1.2.x has 847 move slots and 320 ability names, but many are unfinished placeholders, and those are skipped. A ROM hack that implements more of them is picked up automatically.
 - **Nat. Dex Emerald** gets the Hoenn versions of the Elite Four warp and the Surprise Gym Leader, like Emerald itself. Eevee evolves with stones in Nat. Dex, so the clock doesn't matter there.
 - The Elite Four warp works the same. Nat. Dex moves the warp-destination slot in RAM, so the extension finds it when the gift arrives. It does this by matching your current location while you're standing in a map.
@@ -373,18 +378,17 @@ Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDe
 
 ## Optional: Nat. Dex Abilities patch
 
-You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed or Nat. Dex Emerald and want the newer mechanics to do something.
+You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed and want the newer mechanics to do something.
 
-Nat. Dex 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in. There is one patch for FireRed and one for Emerald, and they make the same changes.
+Nat. Dex FireRed 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in.
 
 Everything for it is in the [`optional/natdex-abilities-patch`](optional/natdex-abilities-patch) folder. It is not in the release zip.
 
 | File | What it is |
 | --- | --- |
-| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex FireRed. |
-| [`pokeemerald_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokeemerald_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex Emerald. |
-| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROMs, for both games. |
-| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched FireRed ROM correctly. |
+| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch. |
+| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROM. |
+| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched ROM correctly. |
 
 ### What it changes
 
@@ -404,20 +408,17 @@ The extension detects the patched ROM by itself. Nothing needs to be switched on
 
 ### How to set it up
 
-1. **Make the base ROM.** Make a Nat. Dex 1.2.2 ROM the usual way, with CyanSMP64's Nat. Dex 1.2.2 patch applied to FireRed (US) v1.1 or to Emerald (US). Its CRC32 is `34AAFED7` for FireRed and `7B4291C4` for Emerald.
-2. **Apply the patch.** Apply the `.bps` for your game to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `1F90D684` for FireRed and `46D3F144` for Emerald.
+1. **Make the base ROM.** Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
+2. **Apply the patch.** Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `EBD4339B`.
 3. **Randomize with the matching randomizer.** Use `randomizer_natdex_1.2.2_abilities.jar` with the patched ROM and your usual Nat. Dex settings file. If the Tracker makes your ROMs for you (Quickload), point its randomizer and source ROM settings at this jar and the patched ROM. The randomizer needs Java.
-4. **Add the Tracker extension (FireRed).** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too. It was made for the FireRed patch and hasn't been tried on Emerald yet.
+4. **Add the Tracker extension.** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too.
 5. **Start a new game.** Save states made on the unpatched ROM won't work.
 
 ### The randomizer
 
-The patch moves the game's data, so the standard Nat. Dex randomizer can't read a patched ROM. The one here is that same randomizer, changed to read both patched ROMs and to hand out what the patch adds.
+The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. The one here is that same randomizer, changed to read the patched ROM and to hand out the moves and items the patch adds.
 
-- **Abilities:** it hands out the abilities the patch implements. Before this version it only handed out the 77 abilities from the original games. It still never hands out Forecast, Cacophony, Hunger Switch (which only does something on Morpeko) and the seven abilities that are still placeholders: Honey Gather, Multitype, RKS System, Ball Fetch, Commander and two unnamed ones.
-- **Moves and items:** it hands out the 482 moves, the 50 held items and the Exp. Candies.
-- **Your settings still apply.** A settings file that bans trapping or negative abilities bans them among the new ones too.
-- Use it only with the patched ROMs. It no longer reads an unpatched FireRed 1.1, Emerald or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
+- Use it only with the patched ROM. It no longer reads an unpatched FireRed 1.1 or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
 - It is a modified copy of the Universal Pokemon Randomizer ZX build that ships with NatDexExtension, shared under the same GPL-3.0 license. The exact changes are listed in the [folder's README](optional/natdex-abilities-patch/README.md).
 
 ### The Tracker extension
@@ -433,9 +434,7 @@ It does nothing on a ROM without the patch, so it is safe to leave enabled.
 
 ### Before you use it
 
-- **The FireRed patch has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
-- **The Emerald patch is new.** It was tested in an emulator test bench: the same battle checks as FireRed, every move used once, the bag and Exp. Candies, and one double battle. It hasn't had a full playthrough, and the Battle Frontier, link battles and contests are untested.
-- **The FireRed patch was updated on 28 November 2026.** Five move animations (Thunderous Kick, Double Shock, Hurricane, Jungle Healing and one Fickle Beam variant) asked for a battle background the game doesn't have; they now use ones it has. A ROM made with the earlier patch (CRC32 `EBD4339B`) still works with the new randomizer.
+- **It has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
 - **It is an unofficial fan modification.** It isn't made or supported by CyanSMP64 or the Nat. Dex project, so please don't report its bugs to them. Report them here instead.
 - **It is a patch, not a game.** No ROM is included or will be. You supply your own game file.
 
