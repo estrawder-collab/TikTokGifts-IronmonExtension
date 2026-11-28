@@ -378,17 +378,18 @@ Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDe
 
 ## Optional: Nat. Dex Abilities patch
 
-You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed and want the newer mechanics to do something.
+You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed or Nat. Dex Emerald and want the newer mechanics to do something.
 
-Nat. Dex FireRed 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in.
+Nat. Dex 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in. There is one patch for FireRed and one for Emerald, and they make the same changes.
 
 Everything for it is in the [`optional/natdex-abilities-patch`](optional/natdex-abilities-patch) folder. It is not in the release zip.
 
 | File | What it is |
 | --- | --- |
-| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch. |
-| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROM. |
-| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched ROM correctly. |
+| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex FireRed. |
+| [`pokeemerald_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokeemerald_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex Emerald. |
+| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROMs, for both games. |
+| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched FireRed ROM correctly. |
 
 ### What it changes
 
@@ -408,17 +409,20 @@ The extension detects the patched ROM by itself. Nothing needs to be switched on
 
 ### How to set it up
 
-1. **Make the base ROM.** Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
-2. **Apply the patch.** Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `EBD4339B`.
+1. **Make the base ROM.** Make a Nat. Dex 1.2.2 ROM the usual way, with CyanSMP64's Nat. Dex 1.2.2 patch applied to FireRed (US) v1.1 or to Emerald (US). Its CRC32 is `34AAFED7` for FireRed and `7B4291C4` for Emerald.
+2. **Apply the patch.** Apply the `.bps` for your game to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `1F90D684` for FireRed and `46D3F144` for Emerald.
 3. **Randomize with the matching randomizer.** Use `randomizer_natdex_1.2.2_abilities.jar` with the patched ROM and your usual Nat. Dex settings file. If the Tracker makes your ROMs for you (Quickload), point its randomizer and source ROM settings at this jar and the patched ROM. The randomizer needs Java.
-4. **Add the Tracker extension.** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too.
+4. **Add the Tracker extension (FireRed).** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too. It was made for the FireRed patch and hasn't been tried on Emerald yet.
 5. **Start a new game.** Save states made on the unpatched ROM won't work.
 
 ### The randomizer
 
-The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. The one here is that same randomizer, changed to read the patched ROM and to hand out the moves and items the patch adds.
+The patch moves the game's data, so the standard Nat. Dex randomizer can't read a patched ROM. The one here is that same randomizer, changed to read both patched ROMs and to hand out what the patch adds.
 
-- Use it only with the patched ROM. It no longer reads an unpatched FireRed 1.1 or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
+- **Abilities:** it hands out the abilities the patch implements. Before this version it only handed out the 77 abilities from the original games. It still never hands out Forecast, Cacophony, Hunger Switch (which only does something on Morpeko) and the seven abilities that are still placeholders: Honey Gather, Multitype, RKS System, Ball Fetch, Commander and two unnamed ones.
+- **Moves and items:** it hands out the 482 moves, the 50 held items and the Exp. Candies.
+- **Your settings still apply.** A settings file that bans trapping or negative abilities bans them among the new ones too.
+- Use it only with the patched ROMs. It no longer reads an unpatched FireRed 1.1, Emerald or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
 - It is a modified copy of the Universal Pokemon Randomizer ZX build that ships with NatDexExtension, shared under the same GPL-3.0 license. The exact changes are listed in the [folder's README](optional/natdex-abilities-patch/README.md).
 
 ### The Tracker extension
@@ -434,7 +438,9 @@ It does nothing on a ROM without the patch, so it is safe to leave enabled.
 
 ### Before you use it
 
-- **It has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
+- **The FireRed patch has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
+- **The Emerald patch is new.** It was tested in an emulator test bench: the same battle checks as FireRed, every move used once, the bag and Exp. Candies, and one double battle. It hasn't had a full playthrough, and the Battle Frontier, link battles and contests are untested.
+- **The FireRed patch was updated on 28 November 2026.** Five move animations (Thunderous Kick, Double Shock, Hurricane, Jungle Healing and one Fickle Beam variant) asked for a battle background the game doesn't have; they now use ones it has. A ROM made with the earlier patch (CRC32 `EBD4339B`) still works with the new randomizer.
 - **It is an unofficial fan modification.** It isn't made or supported by CyanSMP64 or the Nat. Dex project, so please don't report its bugs to them. Report them here instead.
 - **It is a patch, not a game.** No ROM is included or will be. You supply your own game file.
 
