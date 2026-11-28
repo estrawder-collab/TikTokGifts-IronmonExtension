@@ -1,7 +1,8 @@
 --[[
-	TikTok Gifts - Ironmon Tracker extension (Pokemon FireRed / LeafGreen, BizHawk)
-	Works with the original games and with the Nat. Dex ROM hack
-	(CyanSMP64's NatDexExtension).
+	TikTok Gifts - Ironmon Tracker extension (BizHawk)
+	Works with Pokemon FireRed and LeafGreen, with the Nat. Dex ROM hack
+	(CyanSMP64's NatDexExtension, FireRed and Emerald builds), and with Pokemon
+	Emerald, Ruby and Sapphire.
 
 	Lets TikTok LIVE gifts change your game. Gifts arrive through the small
 	Node.js bridge in TikTokGifts/bridge, which appends each gift as one line to
@@ -33,7 +34,7 @@ local function TikTokGifts()
 	local self = {}
 
 	-- ======================= METADATA =======================
-	self.version = "1.16.0"
+	self.version = "1.17.0"
 	self.name = "TikTok Gifts"
 	self.author = "Demon_Quingar91"
 	self.description = "TikTok LIVE gifts affect your game: level ups, EVs/IVs, new moves, curses, an Elite Four warp and more. Needs the bridge running (see README)."
@@ -53,7 +54,7 @@ local function TikTokGifts()
 		          poisonLead, stealItem, resetEVs
 		Random:   randomizeIVs, randomizeEVs
 		Chaos:    replaceLead   (releases your lead, gives a random Lv.15 Pokemon)
-		          eliteFourWarp (the next door you enter takes you to Lorelei's room,
+		          eliteFourWarp (the next door you enter takes you to the Elite Four,
 		                         and your lead becomes Lv.100 with max IVs/EVs/PP)
 		          spawnGymLeader (a random Gym Leader battles you with 6 Pokemon of
 		                          their type; no badge, counts as a normal trainer)
@@ -212,7 +213,7 @@ local function TikTokGifts()
 
 		-- giveHealingItem: one random item from this list goes into your bag per
 		-- gift. Higher weight = more likely. Remove lines or set weight = 0 to
-		-- exclude an item. (IDs are the same in FireRed and Nat. Dex.)
+		-- exclude an item. (IDs are the same in every supported game.)
 		maxItemsPerGift = 10,        -- cap for one streak (e.g. 20x the same gift)
 		-- healParty and giveHealingItem also work DURING battles. In battle,
 		-- fainted Pokemon aren't revived (that could confuse the battle).
@@ -338,7 +339,7 @@ local function TikTokGifts()
 	end
 
 	-- ======================= GAME DETECTION =================
-	-- Original FireRed/LeafGreen addresses are from pret's symbol maps.
+	-- Addresses for the original games are from pret's symbol maps.
 	-- Nat. Dex ROMs publish their addresses and struct sizes in an extended ROM
 	-- header (the same one the NatDexExtension reads), so those are read live.
 	local VANILLA_TABLES = {
@@ -350,6 +351,84 @@ local function TikTokGifts()
 		           evos = 0x08259734, learnsets = 0x0825D794 },
 		         [1] = { baseStats = 0x082547D0, moves = 0x08250C50, names = 0x08245F2C, trainers = 0x0823EB14, classNames = 0x0823E5A4,
 		           evos = 0x082597A4, learnsets = 0x0825D804 } },
+	}
+
+	-- Emerald, Ruby and Sapphire, one set per revision. Emerald reaches its save
+	-- data through pointers (sb1Ptr/sb2Ptr); Ruby and Sapphire keep it at fixed
+	-- addresses (sb1/sb2) and don't scramble item quantities.
+	local HOENN_TABLES = {
+		BPEE = {
+			[0] = { label = "Emerald", baseStats = 0x083203CC, moves = 0x0831C898, names = 0x083185C8,
+				trainers = 0x08310030, classNames = 0x0830FCD4, evos = 0x0832531C, learnsets = 0x0832937C,
+				party = 0x020244EC, enemyParty = 0x02024744, battleMons = 0x02024084, opponentA = 0x02038BCA,
+				scriptCtx = 0x03000E40, warpDest = 0x020322E4, localTime = 0x03005CF8, sb1Ptr = 0x03005D8C,
+				sb2Ptr = 0x03005D90 },
+		},
+		AXVE = {
+			[0] = { label = "Ruby v1.0", baseStats = 0x081FEC18, moves = 0x081FB12C, names = 0x081F716C,
+				trainers = 0x081F04FC, classNames = 0x081F0208, evos = 0x08203B68, learnsets = 0x08207BC8,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+			[1] = { label = "Ruby v1.1", baseStats = 0x081FEC30, moves = 0x081FB144, names = 0x081F7184,
+				trainers = 0x081F0514, classNames = 0x081F0220, evos = 0x08203B80, learnsets = 0x08207BE0,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+			[2] = { label = "Ruby v1.2", baseStats = 0x081FEC30, moves = 0x081FB144, names = 0x081F7184,
+				trainers = 0x081F0514, classNames = 0x081F0220, evos = 0x08203B80, learnsets = 0x08207BE0,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+		},
+		AXPE = {
+			[0] = { label = "Sapphire v1.0", baseStats = 0x081FEBA8, moves = 0x081FB0BC, names = 0x081F70FC,
+				trainers = 0x081F048C, classNames = 0x081F0198, evos = 0x08203AF8, learnsets = 0x08207B58,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+			[1] = { label = "Sapphire v1.1", baseStats = 0x081FEBC0, moves = 0x081FB0D4, names = 0x081F7114,
+				trainers = 0x081F04A4, classNames = 0x081F01B0, evos = 0x08203B10, learnsets = 0x08207B70,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+			[2] = { label = "Sapphire v1.2", baseStats = 0x081FEBC0, moves = 0x081FB0D4, names = 0x081F7114,
+				trainers = 0x081F04A4, classNames = 0x081F01B0, evos = 0x08203B10, learnsets = 0x08207B70,
+				party = 0x03004360, enemyParty = 0x030045C0, battleMons = 0x02024A80, opponentA = 0x0202FF5E,
+				scriptCtx = 0x030005B8, warpDest = 0x020297F8, localTime = 0x03004038, sb1 = 0x02025734,
+				sb2 = 0x02024EA4 },
+		},
+	}
+
+	-- The Pokemon League of each region, for the Elite Four warp:
+	-- where the first room is, which maps belong to the League (a door between
+	-- two of them is never redirected), and what the game itself resets after
+	-- the Hall of Fame or a whiteout so the League can be fought from the start.
+	local KANTO_LEAGUE = {
+		group = 1, firstRoom = 75, rooms = { [75] = true, [76] = true, [77] = true, [78] = true, [79] = true, [80] = true },
+		flags = { 0x4B8, 0x4B9, 0x4BA, 0x4BB, 0x4BC },  -- FLAG_DEFEATED_LORELEI..FLAG_DEFEATED_CHAMP
+		trainerFlags = { 438, 439, 440, 739, 740, 741 }, -- Champion first battles + rematches
+		sceneVar = 0x4068, -- VAR_MAP_SCENE_POKEMON_LEAGUE: plays the walk-in and seals the entrance
+	}
+	local function hoennLeague(firstFlag, sceneVar)
+		return {
+			-- Group 16: 0-4 are Sidney's, Phoebe's, Glacia's, Drake's and the Champion's
+			-- rooms, 5-9 the halls between them, 11 the Hall of Fame
+			group = 16, firstRoom = 0, rooms = { [0] = true, [1] = true, [2] = true, [3] = true, [4] = true,
+				[5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [11] = true },
+			flags = { firstFlag, firstFlag + 1, firstFlag + 2, firstFlag + 3 }, -- FLAG_DEFEATED_ELITE_4_*
+			trainerFlags = {},
+			sceneVar = sceneVar or 0x409C, -- VAR_ELITE_4_STATE
+		}
+	end
+	-- What differs between Emerald and Ruby/Sapphire (the two share everything)
+	local HOENN_COMMON = {
+		BPEE = { flagsOff = 0x1270, varsOff = 0x139C, bagItemsOff = 0x0560, bagItemsCount = 30, encKeyOff = 0x00AC,
+			originGame = 3, league = hoennLeague(0x4FB) },
+		AXVE = { flagsOff = 0x1220, varsOff = 0x1340, bagItemsOff = 0x0560, bagItemsCount = 20,
+			originGame = 2, league = hoennLeague(0x4DD) },
+		AXPE = { flagsOff = 0x1220, varsOff = 0x1340, bagItemsOff = 0x0560, bagItemsCount = 20,
+			originGame = 1, league = hoennLeague(0x4DD) },
 	}
 
 	local function isRomAddr(a) return a >= 0x08000000 and a < 0x0A000000 end
@@ -442,17 +521,68 @@ local function TikTokGifts()
 		end
 	end
 
+	-- Nat. Dex Emerald: the game's clock (gLocalTime) isn't in the ROM header
+	-- either, but the evolution function reads it for Espeon/Umbreon. It is the
+	-- one work-RAM address stored in that function besides the save pointers.
+	local function findNatDexLocalTime(g)
+		local fn = read32(0x080002FC)
+		if not isRomAddr(fn) then return nil end
+		fn = fn - (fn % 2)
+		local found, count = nil, 0
+		for a = fn + ((4 - fn % 4) % 4), fn + 0x5FC, 4 do
+			local v = read32(a)
+			if v >= 0x03000000 and v < 0x03008000 and v % 4 == 0
+				and v ~= g.sb1Ptr and v ~= g.sb2Ptr and v ~= found then
+				found, count = v, count + 1
+			end
+		end
+		return count == 1 and found or nil
+	end
+
 	local function detectGame()
 		local code = string.char(read8(0x080000AC), read8(0x080000AD), read8(0x080000AE), read8(0x080000AF))
-		if code ~= "BPRE" and code ~= "BPGE" then
-			log("This isn't FireRed or LeafGreen (game code " .. code .. "). Effects are disabled.")
+		local hoenn = HOENN_TABLES[code]
+		if code ~= "BPRE" and code ~= "BPGE" and not hoenn then
+			log("This game isn't supported (game code " .. code:gsub("[^%w]", "?") .. "). TikTok Gifts works with FireRed, LeafGreen, Emerald, Ruby and Sapphire. Effects are disabled.")
 			return nil
 		end
 		local version = read8(0x080000BC)
+		-- Nat. Dex builds (FireRed or Emerald): same check the NatDexExtension uses
+		local natdexRom = read32(0x08000170) == 1258 and (code == "BPRE" or code == "BPGE" or code == "BPEE")
+		local natdexEmerald = natdexRom and code == "BPEE"
 		local g
-		if read32(0x08000170) == 1258 then -- same check the NatDexExtension uses
+		if hoenn and not natdexRom then
+			local t, c = hoenn[version], HOENN_COMMON[code]
+			if not t then
+				log(string.format("Unknown %s version %d. Effects are disabled.", code, version))
+				return nil
+			end
+			-- Pokemon, species, moves and trainers are laid out as in FireRed
 			g = {
-				natdex = true, label = "Nat. Dex FireRed",
+				natdex = false, hoenn = true, label = t.label,
+				monSize = 100, subOff = 0x20, statusOff = 0x50, levelOff = 0x54, maxHpOff = 0x58,
+				defOff = 0x5C, spaOff = 0x60, nameLen = 10,
+				baseStats = t.baseStats, speciesSize = 28, moves = t.moves, moveSize = 12, names = t.names,
+				typeOff = 6, friendOff = 0x12, growthOff = 0x13, abilityOff = 0x16, abilitySize = 1,
+				maxSpecies = 411, maxMove = 354, maxAbility = 77, shedinja = 303,
+				party = t.party, sb1Ptr = t.sb1Ptr, sb2Ptr = t.sb2Ptr, sb1 = t.sb1, sb2 = t.sb2,
+				flagsOff = c.flagsOff, varsOff = c.varsOff,
+				bagItemsOff = c.bagItemsOff, bagItemsCount = c.bagItemsCount, encKeyOff = c.encKeyOff,
+				battleMons = t.battleMons, battleMonSize = 0x58,
+				enemyParty = t.enemyParty, opponentA = t.opponentA, scriptCtx = t.scriptCtx,
+				trainers = t.trainers, trainerSize = 40, trainerNameOff = 4, trainerNameLen = 12,
+				classNames = t.classNames, classNameSize = 13,
+				bmHpOff = 0x28, bmMaxHpOff = 0x2C, bmPidOff = 0x48, bmStatusOff = 0x4C,
+				warpDest = t.warpDest,
+				evos = t.evos, evoEntrySize = 8, evosPerMon = 5,
+				learnsets = t.learnsets, learnsetWide = false,
+				-- These games have a clock: Espeon and Umbreon depend on the time of day
+				localTime = t.localTime,
+				originGame = c.originGame, league = c.league,
+			}
+		elseif natdexRom then
+			g = {
+				natdex = true, hoenn = natdexEmerald, label = natdexEmerald and "Nat. Dex Emerald" or "Nat. Dex FireRed",
 				-- Pokemon struct (104 bytes, 12-letter names)
 				monSize = read16(0x08000442), subOff = read16(0x08000414), statusOff = read16(0x08000416),
 				levelOff = read16(0x08000418), maxHpOff = read16(0x0800041A),
@@ -472,9 +602,10 @@ local function TikTokGifts()
 				-- Battle copies of the active Pokemon (struct BattlePokemon)
 				battleMons = read32(0x08000228), battleMonSize = 0x5C,
 				enemyParty = read32(0x08000280), opponentA = read32(0x08000294),
-				-- Script engine: same RAM addresses as the original game in Nat. Dex 1.2.x
-				-- (checked against a real ROM); found by scanning if that ever changes
-				scriptCtx = 0x03000EB0,
+				-- Script engine: Nat. Dex FireRed 1.2.x keeps the original game's RAM
+				-- address (checked against a real ROM). It is found by scanning if
+				-- that ever changes, and always on Nat. Dex Emerald.
+				scriptCtx = (not natdexEmerald) and 0x03000EB0 or nil,
 				-- Trainer table + class names (for the Gym Leader's intro message)
 				trainers = read32(0x08000314), trainerSize = read16(0x0800042E),
 				trainerNameOff = read16(0x0800049A), trainerNameLen = read16(0x08000430),
@@ -483,10 +614,15 @@ local function TikTokGifts()
 				flagsOff = read32(0x08000150), varsOff = read32(0x08000154),
 				-- Level-up rules: learnsets are 32-bit {level, move} entries
 				learnsets = read32(0x0800030C), learnsetWide = true,
-				mapHeader = read32(0x08000284), evoEveryLevelFlag = 0x82B,
+				mapHeader = read32(0x08000284),
+				evoEveryLevelFlag = natdexEmerald and 0x884 or 0x82B, -- FLAG_EVO_EVERY_LEVEL
 				regionalRock = 52,
+				originGame = natdexEmerald and 3 or 4,
+				-- Nat. Dex Emerald keeps Emerald's League flags but moved VAR_ELITE_4_STATE
+				league = natdexEmerald and hoennLeague(0x4FB, 0x40A4) or KANTO_LEAGUE,
 			}
 			findNatDexEvoTable(g)
+			if natdexEmerald then g.localTime = findNatDexLocalTime(g) end
 			-- Exp. Candy items, if this ROM has them (found by item name).
 			-- Item entries are {name, u16 id, ...}; the name is 14 or 20 bytes.
 			g.items, g.itemCount = read32(0x080001C8), read16(0x080004B8)
@@ -535,6 +671,7 @@ local function TikTokGifts()
 				-- Level-up rules: learnsets are 16-bit (level << 9 | move) entries
 				evos = t.evos, evoEntrySize = 8, evosPerMon = 5,
 				learnsets = t.learnsets, learnsetWide = false,
+				originGame = code == "BPRE" and 4 or 5, league = KANTO_LEAGUE,
 			}
 		end
 		-- On the original games, prefer the Tracker's party address if it has one.
@@ -609,6 +746,7 @@ local function TikTokGifts()
 			elseif c >= 0xD5 and c <= 0xEE then out[#out + 1] = string.char(97 + c - 0xD5)
 			elseif c >= 0xA1 and c <= 0xAA then out[#out + 1] = string.char(48 + c - 0xA1)
 			elseif c == 0x00 then out[#out + 1] = " "
+			elseif c == 0x2D then out[#out + 1] = "&"
 			elseif c == 0xAD then out[#out + 1] = "."
 			elseif c == 0xAE then out[#out + 1] = "-"
 			elseif c == 0xB4 then out[#out + 1] = "'"
@@ -1077,9 +1215,14 @@ local function TikTokGifts()
 	-- What the game does after a Rare Candy, done directly on the data:
 	-- friendship gain, level-up moves, and evolution. (The game's own routine
 	-- lives inside the bag menu, so it can't be started from here.)
+	-- Where the save data is right now: a fixed address in Ruby/Sapphire, behind
+	-- a pointer (that the game moves around) everywhere else
+	local function saveBlock1() return G.sb1 or read32(G.sb1Ptr) end
+	local function saveBlock2() return G.sb2 or read32(G.sb2Ptr) end
+
 	local function flagIsSet(flag)
-		if not (G.sb1Ptr and G.flagsOff) then return false end
-		return bits(read8(read32(G.sb1Ptr) + G.flagsOff + math.floor(flag / 8)), flag % 8, 1) == 1
+		if not ((G.sb1 or G.sb1Ptr) and G.flagsOff) then return false end
+		return bits(read8(saveBlock1() + G.flagsOff + math.floor(flag / 8)), flag % 8, 1) == 1
 	end
 
 	local function heldItem(mon) return math.floor(getSub32(mon, "G", 0) / 65536) end
@@ -1138,6 +1281,8 @@ local function TikTokGifts()
 		local lv = level(mon)
 		local atk, def = read16(mon.base + G.maxHpOff + 2), read16(mon.base + G.defOff)
 		local pidHigh = math.floor(mon.pid / 65536) % 10
+		-- Hour of the game's clock (Emerald/Ruby/Sapphire), as the game last read it
+		local hour = G.localTime and read8(G.localTime + 2) or nil
 		local target
 		local row = G.evos + sp * G.evoEntrySize * G.evosPerMon
 		for e = 0, G.evosPerMon - 1 do
@@ -1145,6 +1290,8 @@ local function TikTokGifts()
 			local method, param, to = read16(a), read16(a + 2), read16(a + 4)
 			local ok = false
 			if method == 1 then ok = friendship(mon) >= 220                    -- friendship
+			elseif method == 2 then ok = hour ~= nil and hour >= 12 and hour < 24 and friendship(mon) >= 220 -- by day
+			elseif method == 3 then ok = hour ~= nil and hour < 12 and friendship(mon) >= 220                -- by night
 			elseif method == 4 or method == 13 then ok = param <= lv           -- level (13 = Ninjask)
 			elseif method == 8 then ok = param <= lv and atk > def
 			elseif method == 9 then ok = param <= lv and atk == def
@@ -1243,16 +1390,22 @@ local function TikTokGifts()
 	-- the next warp leads. Its address is known for the original games. For
 	-- Nat. Dex it's found at runtime: while you're standing in a map it always
 	-- holds the same 8 bytes as the saved current location.
-	local LEAGUE_GROUP, LORELEIS_ROOM = 1, 75  -- same in both; 75-80 are the League rooms
 	local FRAME_EVENT_NAME = "TikTokGiftsEliteFourWarp"
 	local warp = { armed = false, candidates = {}, snaps = {}, lastLoc = nil, frames = 0 }
 
-	local function sb1() return read32(G.sb1Ptr) end
+	local function sb1() return saveBlock1() end
 	local function currentLocation() return readBytes(sb1() + 4, 8) end
 
 	local function findWarpDestCandidates()
 		local loc = currentLocation()
-		if G.warpDest and sameBytes(readBytes(G.warpDest, 8), loc) then return { G.warpDest } end
+		if G.warpDest then
+			-- Right after a save is loaded the destination is still blank; it is
+			-- filled in by the first door you take
+			local dest = readBytes(G.warpDest, 8)
+			local blank = true
+			for i = 1, 8 do if dest[i] ~= 0 then blank = false end end
+			if blank or sameBytes(dest, loc) then return { G.warpDest } end
+		end
 
 		local ok, data = pcall(memory.readbyterange, 0, 0x40000, "EWRAM")
 		if not ok or type(data) ~= "table" then return {} end
@@ -1282,14 +1435,15 @@ local function TikTokGifts()
 		write16(sb1() + G.varsOff + (var - 0x4000) * 2, value)
 	end
 
-	-- Same resets the game runs itself (EventScript_ResetEliteFour) after the
-	-- Hall of Fame or a whiteout, so the whole League can be fought fresh.
+	-- Same resets the game runs itself after the Hall of Fame or a whiteout,
+	-- so the whole League can be fought fresh (see the League tables above).
 	local function resetEliteFour()
-		for flag = 0x4B8, 0x4BC do setFlag(flag, false) end -- FLAG_DEFEATED_LORELEI..FLAG_DEFEATED_CHAMP
-		for _, trainer in ipairs({ 438, 439, 440, 739, 740, 741 }) do -- Champion first battles + rematches
+		local league = G.league
+		for _, flag in ipairs(league.flags) do setFlag(flag, false) end
+		for _, trainer in ipairs(league.trainerFlags) do
 			setFlag(0x500 + trainer, false) -- TRAINER_FLAGS_START + id
 		end
-		setVar(0x4068, 0) -- VAR_MAP_SCENE_POKEMON_LEAGUE: plays the walk-in and seals the entrance
+		setVar(league.sceneVar, 0)
 	end
 
 	-- Raises the Pokemon from one level to another the way the game would:
@@ -1352,15 +1506,15 @@ local function TikTokGifts()
 	end
 
 	local function isLeagueRoom(dest)
-		return dest[1] == LEAGUE_GROUP and dest[2] >= LORELEIS_ROOM and dest[2] <= LORELEIS_ROOM + 5
+		return dest[1] == G.league.group and G.league.rooms[dest[2]] == true
 	end
 
 	local function fireWarp(addr)
 		resetEliteFour()
 		local boostMsg = SETTINGS.eliteFourBoostLead and boostLeadForLeague() or nil
-		write8(addr, LEAGUE_GROUP)
-		write8(addr + 1, LORELEIS_ROOM)
-		write8(addr + 2, 0)          -- warp 0 = the room's entrance (6, 12)
+		write8(addr, G.league.group)
+		write8(addr + 1, G.league.firstRoom)
+		write8(addr + 2, 0)          -- warp 0 = the room's entrance
 		write16(addr + 4, 0xFFFF)    -- x = -1
 		write16(addr + 6, 0xFFFF)    -- y = -1
 		stopWarpWatch()
@@ -1417,6 +1571,7 @@ local function TikTokGifts()
 	local Effects = {}
 
 	function Effects.eliteFourWarp()
+		if not G.league then return false, "the Pokemon League of this game isn't known", "permanent" end
 		if warp.armed then return false, "the Elite Four warp is already waiting for the next door" end
 		if not (event and event.onframeend) then return false, "needs BizHawk's per-frame Lua events", "permanent" end
 		warp.armed, warp.frames = true, 0
@@ -1649,10 +1804,11 @@ local function TikTokGifts()
 	end
 
 	-- Adds one item to the bag's Items pocket (stacking with an existing stack),
-	-- the same way the game does: quantities are XOR'd with the save's key.
+	-- the same way the game does: quantities are XOR'd with the save's key
+	-- (Ruby and Sapphire have no key and store them as they are).
 	local function addBagItem(itemId)
-		local pocket = read32(G.sb1Ptr) + G.bagItemsOff
-		local key = read32(read32(G.sb2Ptr) + G.encKeyOff) % 65536
+		local pocket = saveBlock1() + G.bagItemsOff
+		local key = G.encKeyOff and (read32(saveBlock2() + G.encKeyOff) % 65536) or 0
 		local emptySlot
 		for i = 0, G.bagItemsCount - 1 do
 			local slot = pocket + i * 4
@@ -1926,7 +2082,7 @@ local function TikTokGifts()
 	end
 
 	-- ======================= GYM LEADER AMBUSH ==============
-	-- A random Kanto Gym Leader walks up and battles you with 6 Pokemon of
+	-- A random Gym Leader of the game's region walks up and battles you with 6 Pokemon of
 	-- their type (by the ROM's current types, so randomized types count).
 	-- It works like any trainer fight: no badge, and the leader's "defeated"
 	-- flag is put back afterwards, so their real Gym battle still happens.
@@ -1945,6 +2101,20 @@ local function TikTokGifts()
 		{ id = 420, name = "SABRINA",   types = { 14 } },   -- Psychic
 		{ id = 419, name = "BLAINE",    types = { 10 } },   -- Fire
 		{ id = 350, name = "GIOVANNI",  types = { 4 } },    -- Ground
+	}
+	-- Emerald, Ruby and Sapphire use the same trainer numbers. The eighth leader
+	-- is Juan in Emerald and Wallace in Ruby/Sapphire; the name shown comes from
+	-- the ROM. Tate & Liza fight a double battle, so they only show up when you
+	-- have two Pokemon able to fight.
+	local HOENN_GYM_LEADERS = {
+		{ id = 265, name = "ROXANNE",   types = { 5 } },    -- Rock
+		{ id = 266, name = "BRAWLY",    types = { 1 } },    -- Fighting
+		{ id = 267, name = "WATTSON",   types = { 13 } },   -- Electric
+		{ id = 268, name = "FLANNERY",  types = { 10 } },   -- Fire
+		{ id = 269, name = "NORMAN",    types = { 0 } },    -- Normal
+		{ id = 270, name = "WINONA",    types = { 2 } },    -- Flying
+		{ id = 271, name = "TATE&LIZA", types = { 14 }, double = true }, -- Psychic
+		{ id = 272, name = "JUAN", nameRS = "WALLACE", types = { 11 } }, -- Water
 	}
 	local GYM_EVENT_NAME = "TikTokGiftsGymLeader"
 	local gym = { active = false }
@@ -2002,8 +2172,11 @@ local function TikTokGifts()
 	-- lock. Known for the original games; found by its shape for Nat. Dex.
 	local function looksLikeContext(ctx)
 		local t, e = read32(ctx + 0x5C), read32(ctx + 0x60)
-		return t >= 0x08000000 and t < 0x0A000000 and e > t and (e - t) % 4 == 0 and e - t <= 0x1000
-			and read32(ctx + 0x78 + 0x5C) == t and read32(ctx + 0x78 + 0x60) == e
+		if not (t >= 0x08000000 and t < 0x0A000000 and e > t and (e - t) % 4 == 0 and e - t <= 0x1000) then return false end
+		-- The second context right behind it uses the same command table, or
+		-- is still blank if the game hasn't needed it yet
+		local t2, e2 = read32(ctx + 0x78 + 0x5C), read32(ctx + 0x78 + 0x60)
+		return (t2 == t and e2 == e) or (t2 == 0 and e2 == 0)
 	end
 	local function findScriptContext()
 		if G.scriptCtx and looksLikeContext(G.scriptCtx) then
@@ -2145,7 +2318,19 @@ local function TikTokGifts()
 			return false, "waiting until you're free to move (not in a menu, text box or cutscene)"
 		end
 
-		local leader = GYM_LEADERS[math.random(1, #GYM_LEADERS)]
+		local able = 0
+		for slot = 1, 6 do
+			local m = readMon(slot)
+			if m and not isEgg(m) and read16(m.base + G.hpOff) > 0 then able = able + 1 end
+		end
+		local leaders = {}
+		for _, l in ipairs(G.hoenn and HOENN_GYM_LEADERS or GYM_LEADERS) do
+			if not l.double or able >= 2 then leaders[#leaders + 1] = l end
+		end
+		local leader = leaders[math.random(1, #leaders)]
+		if leader.nameRS and G.originGame ~= 3 then -- Ruby/Sapphire
+			leader = { id = leader.id, name = leader.nameRS, types = leader.types }
+		end
 		local pool = themedSpeciesPool(leader.types)
 		if #pool == 0 then return false, "no Pokemon of " .. leader.name .. "'s type were found", "permanent" end
 		local lv = math.max(1, math.min(100, highestPartyLevel() + (SETTINGS.gymLeaderLevelBonus or 0)))
@@ -2164,7 +2349,7 @@ local function TikTokGifts()
 				species = sp, level = lv, pid = rand32(), otid = rand32(),
 				moves = fourRandomMoves(), ivs = { 31, 31, 31, 31, 31, 31 }, evs = evs,
 				abilityBit = math.random(0, 1), language = 2, otName = otName,
-				origins = math.min(lv, 127) + 4 * 128 + 4 * 2048, -- met level, FireRed, Poke Ball
+				origins = math.min(lv, 127) + (G.originGame or 4) * 128 + 4 * 2048, -- met level, game, Poke Ball
 			}
 			names[i] = speciesName(sp)
 		end

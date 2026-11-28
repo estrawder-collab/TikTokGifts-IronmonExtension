@@ -1,6 +1,6 @@
 # TikTok Gifts – Ironmon Tracker extension
 
-Lets TikTok LIVE gifts change your FireRed game while you play in BizHawk.
+Lets TikTok LIVE gifts change your Pokémon game while you play in BizHawk. Works with FireRed, LeafGreen, Emerald, Ruby and Sapphire, and with the Nat. Dex builds of FireRed and Emerald.
 Out of the box, a **Hat and Mustache** gives your first party Pokémon +1 level.
 
 ```
@@ -11,8 +11,8 @@ By **Demon_Quingar91**. Latest version: [Releases](https://github.com/estrawder-
 
 ## What you need
 
-- **BizHawk** with the [Ironmon Tracker](https://github.com/besteon/Ironmon-Tracker) set up for FireRed.
-- **Pokémon FireRed (US)**, or the Nat. Dex FireRed ROM hack. You supply your own game file.
+- **BizHawk** with the [Ironmon Tracker](https://github.com/besteon/Ironmon-Tracker) set up for your game.
+- **Pokémon FireRed, LeafGreen, Emerald, Ruby or Sapphire (US)**, or the Nat. Dex ROM hack of FireRed or Emerald. You supply your own game file.
 - **[Node.js](https://nodejs.org)** (current LTS version) for the bridge.
 - **TikFinity Desktop** (free) or **TikOps** to pass your stream's gifts to the bridge.
 
@@ -249,7 +249,7 @@ These come from your ROM, not from the extension:
 - **A species' own abilities** are whatever the ROM gives it.
 - **Nat. Dex "evolve every level" mode** rolls any species, exactly as the game does.
 
-On original FireRed and LeafGreen everything is Gen 1–3 already, so only generation settings of 1 or 2 change anything there. The generation limit knows the Pokémon, move and ability order of the original games and of Nat. Dex FireRed 1.2.x. On a ROM that orders its Pokémon differently, the extension says so in the Lua Console and ignores the generation limit instead of guessing.
+On the original games (FireRed, LeafGreen, Emerald, Ruby, Sapphire) everything is Gen 1–3 already, so only generation settings of 1 or 2 change anything there. The generation limit knows the Pokémon, move and ability order of the original games and of Nat. Dex FireRed 1.2.x. On a ROM that orders its Pokémon differently, the extension says so in the Lua Console and ignores the generation limit instead of guessing.
 
 ## Effects
 
@@ -257,8 +257,8 @@ On original FireRed and LeafGreen everything is Gen 1–3 already, so only gener
 
 | Effect | Default gift | What it does |
 |---|---|---|
-| `eliteFourWarp` | Diamond Gun, 5000 coins | The next door, staircase, cave entrance or warp tile you take sends you into Lorelei's room, and your lead is levelled up to Lv.100 (learning moves and evolving on the way) with max IVs, EVs and PP. See "Elite Four warp" below. |
-| `spawnGymLeader` | Meteor Shower, 3000 coins | A random Kanto Gym Leader challenges you on the spot with 6 Pokémon of their type, at your highest party level. Their team has max IVs and EVs, random moves and random abilities. See "Surprise Gym Leader" below. |
+| `eliteFourWarp` | Diamond Gun, 5000 coins | The next door, staircase, cave entrance or warp tile you take sends you into the first Elite Four room (Lorelei's in FireRed and LeafGreen, Sidney's in Emerald, Ruby and Sapphire), and your lead is levelled up to Lv.100 (learning moves and evolving on the way) with max IVs, EVs and PP. See "Elite Four warp" below. |
+| `spawnGymLeader` | Meteor Shower, 3000 coins | A random Gym Leader of your game's region challenges you on the spot with 6 Pokémon of their type, at your highest party level. Their team has max IVs and EVs, random moves and random abilities. See "Surprise Gym Leader" below. |
 | `replaceLead` | Galaxy, 1000 coins | Releases the lead and gives you a random Lv.15 Pokémon with random moves, IVs, EVs, nature and ability. The old one's raw data is saved to `TikTokGifts/released_pokemon.txt`. |
 | `maxIVs` | Manifesting, 500 coins | Lead gets 31 IVs in every stat. |
 | `maxEVs` | Punch Cuddle, 400 coins | Lead gets max EVs. `maxEVsMode = "all"` (252 everywhere) or `"legal"` (252/252/4). |
@@ -278,11 +278,11 @@ On original FireRed and LeafGreen everything is Gen 1–3 already, so only gener
 
 ### Elite Four warp
 The gift arms the warp, and it fires on the next door-style warp you take. Walking between outdoor routes, Fly and whiting out don't trigger it. When it fires, it:
-- Clears the Lorelei, Bruno, Agatha, Lance and Champion "defeated" flags, plus all six Champion trainer flags.
+- Clears the Elite Four "defeated" flags. In FireRed and LeafGreen that is Lorelei, Bruno, Agatha, Lance and the Champion, plus all six Champion trainer flags; in Emerald, Ruby and Sapphire it is Sidney, Phoebe, Glacia and Drake.
 - Resets the League scene variable to 0.
 - Boosts your lead to Lv.100 with 31 IVs, max EVs (`maxEVsMode`) and 3 PP Ups on every move, with PP refilled. Damage it had already taken carries over. Turn this off with `eliteFourBoostLead = false`.
 - The lead reaches Lv.100 **as if it had earned the experience**, one level at a time, with the same rules and settings as a `levelUp` gift: it learns the moves it would have learned on the way, evolves when it qualifies (through every stage it passes), and gains friendship. If it already knows four moves, you get the move question for each new move, one after another, with the game paused until you choose; moves you pick there get their 3 PP Ups as well. A low-level lead can bring a dozen or more questions, so set `levelUpFullMoves = "skip"` if you'd rather keep your moves, or turn `levelUpLearnsMoves` / `levelUpEvolves` off to get the plain boost back.
-- Sends you to Lorelei's room entrance.
+- Sends you to the entrance of the first room: Lorelei's, or Sidney's in Emerald, Ruby and Sapphire.
 
 These are the same resets the game does itself after the Hall of Fame or a whiteout. You arrive like a normal challenger: you walk in, the entrance seals behind you, and every room opens as you win. Gym badges aren't touched.
 
@@ -302,12 +302,25 @@ When the gift lands (and you're free to walk around, not in a menu or text box),
 | Blaine | Fire |
 | Giovanni | Ground |
 
-Types are read from your ROM, so randomized types count.
+In Emerald, Ruby and Sapphire it is one of the Hoenn leaders instead:
+
+| Leader | Types |
+|---|---|
+| Roxanne | Rock |
+| Brawly | Fighting |
+| Wattson | Electric |
+| Flannery | Fire |
+| Norman | Normal |
+| Winona | Flying |
+| Tate & Liza | Psychic |
+| Juan (Emerald) or Wallace (Ruby, Sapphire) | Water |
+
+Types are read from your ROM, so randomized types count. Tate & Liza fight a double battle, so they are only picked when you have at least two Pokémon able to fight.
 
 - **It's a normal trainer fight.** You don't get a badge. The leader's "defeated" flag is put back afterwards, so their real Gym battle still happens later.
 - **Losing works like losing to any trainer:** you white out.
 - **Level:** the team's level is your highest party level. Use `gymLeaderLevelBonus` to make them stronger or weaker, and `gymLeaderEVs = "legal"` for a random 510-point EV spread instead of 252 everywhere.
-- **How it works:** the extension writes a tiny event script into unused space at the end of the ROM (in BizHawk's memory only; your ROM file isn't changed) and starts it on the game's own script engine.
+- **How it works:** the extension writes a tiny event script into spare memory of the game's own script engine (RAM only; your ROM file isn't changed) and starts it there.
 
 ### Abilities
 Gen 3 Pokémon only store *which of their species' two abilities* they use. That leaves two modes:
@@ -335,30 +348,43 @@ If a gift can't do anything right now, it's **held** and retried every 10 second
   - `"auto"` (default): if the loaded ROM has Exp. Candy items, the real candy is added to your bag's Items pocket, even during a battle, and you use it yourself like a Rare Candy. If the pocket is full, the gift is held. On any other ROM, the Exp. Points go straight to your lead once you're out of battle.
   - `"direct"`: always give the points straight to the lead. `"item"`: only ever give the item.
   - Points given directly work like the candy does in the newer games: every level passed teaches its moves (asking you first if all four slots are full), then there is one evolution check at the end, and friendship rises once. It stops at Lv. 100.
-- Built for **FireRed US (v1.0/v1.1)** and the **Nat. Dex** ROM hack. LeafGreen addresses are included but untested. If the ROM's data tables can't be read, only the heal, status, item and warp effects run.
+- Built for the US versions of **FireRed and LeafGreen (v1.0/v1.1)**, **Emerald**, **Ruby and Sapphire (v1.0–v1.2)**, and the **Nat. Dex** ROM hacks of FireRed and Emerald (1.2.x). LeafGreen addresses are included but untested. Other languages aren't supported. If the ROM's data tables can't be read, only the heal, status, item and warp effects run.
+
+## Emerald, Ruby and Sapphire
+
+The extension recognises the game from the ROM and switches to that game's addresses by itself; there is nothing to set. Every effect works the same as in FireRed, with these differences:
+
+- **Elite Four warp** leads to Sidney's room in Ever Grande City, and **Surprise Gym Leader** picks from the Hoenn leaders (see both sections above).
+- **Espeon and Umbreon:** these games have a clock, so a gift level-up can evolve a friendly Eevee. As in the game itself, it becomes Espeon when the in-game clock reads 12:00–23:59 and Umbreon when it reads 0:00–11:59.
+- **Bag space:** the Items pocket holds 20 kinds of item in Ruby and Sapphire and 30 in Emerald (FireRed has 42). When it's full, an item gift is held until there is room.
+- **ROM hacks of these games** (difficulty hacks, for example) aren't tested. A hack that keeps the original game's data in the same places should work; one that moves its tables won't be read correctly.
+
+What was tested: all seven US ROMs (Emerald, Ruby v1.0–v1.2, Sapphire v1.0–v1.2) and Nat. Dex Emerald 1.2.2 in an emulator test bench, including a Gym Leader battle and the warp into Sidney's room. Not yet tried inside BizHawk with the Tracker on a real run, so please report anything odd.
 
 ## Nat. Dex compatibility
 
-Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDexExtension) (Nat. Dex FireRed 1.2.x). It detects a Nat. Dex ROM the same way that extension does and reads addresses and struct sizes from the ROM header, so it doesn't matter which extension loads first.
+Works alongside CyanSMP64's [NatDexExtension](https://github.com/CyanSMP64/NatDexExtension) (Nat. Dex FireRed and Nat. Dex Emerald 1.2.x). It detects a Nat. Dex ROM the same way that extension does and reads addresses and struct sizes from the ROM header, so it doesn't matter which extension loads first.
 - Random Pokémon (`replaceLead`) come from all 1,050 base species. Megas and other alternate forms are skipped.
 - Random moves and abilities only come from the ones that work in your ROM. Nat. Dex 1.2.x has 847 move slots and 320 ability names, but many are unfinished placeholders, and those are skipped. A ROM hack that implements more of them is picked up automatically.
+- **Nat. Dex Emerald** gets the Hoenn versions of the Elite Four warp and the Surprise Gym Leader, like Emerald itself. Eevee evolves with stones in Nat. Dex, so the clock doesn't matter there.
 - The Elite Four warp works the same. Nat. Dex moves the warp-destination slot in RAM, so the extension finds it when the gift arrives. It does this by matching your current location while you're standing in a map.
 - The bridge uses the unofficial [`tiktok-live-connector`](https://www.npmjs.com/package/tiktok-live-connector) library. If TikTok changes something and it stops connecting, run `npm update` in the bridge folder.
 - Make a save state before testing.
 
 ## Optional: Nat. Dex Abilities patch
 
-You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed and want the newer mechanics to do something.
+You don't need this to use the extension. It is a separate, optional ROM patch for people who play Nat. Dex FireRed or Nat. Dex Emerald and want the newer mechanics to do something.
 
-Nat. Dex FireRed 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in.
+Nat. Dex 1.2.2 lists Gen 4 to 9 abilities and moves, but many of them are placeholders with no effect. This patch fills them in. There is one patch for FireRed and one for Emerald, and they make the same changes.
 
 Everything for it is in the [`optional/natdex-abilities-patch`](optional/natdex-abilities-patch) folder. It is not in the release zip.
 
 | File | What it is |
 | --- | --- |
-| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch. |
-| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROM. |
-| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched ROM correctly. |
+| [`pokefirered_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokefirered_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex FireRed. |
+| [`pokeemerald_natdex_1.2.2_abilities.bps`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/pokeemerald_natdex_1.2.2_abilities.bps) | The ROM patch for Nat. Dex Emerald. |
+| [`randomizer_natdex_1.2.2_abilities.jar`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/randomizer_natdex_1.2.2_abilities.jar) | The randomizer that matches the patched ROMs, for both games. |
+| [`NatDexSplitCategories.lua`](https://github.com/estrawder-collab/TikTokGifts-IronmonExtension/raw/main/optional/natdex-abilities-patch/NatDexSplitCategories.lua) | A Tracker extension that makes the Tracker show the patched FireRed ROM correctly. |
 
 ### What it changes
 
@@ -378,17 +404,20 @@ The extension detects the patched ROM by itself. Nothing needs to be switched on
 
 ### How to set it up
 
-1. **Make the base ROM.** Make a Nat. Dex FireRed 1.2.2 ROM the usual way: FireRed (US) v1.1 with CyanSMP64's Nat. Dex 1.2.2 patch applied. Its CRC32 is `34AAFED7`.
-2. **Apply the patch.** Apply the `.bps` to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `EBD4339B`.
+1. **Make the base ROM.** Make a Nat. Dex 1.2.2 ROM the usual way, with CyanSMP64's Nat. Dex 1.2.2 patch applied to FireRed (US) v1.1 or to Emerald (US). Its CRC32 is `34AAFED7` for FireRed and `7B4291C4` for Emerald.
+2. **Apply the patch.** Apply the `.bps` for your game to that ROM with a BPS patcher such as Floating IPS (Flips) or Rom Patcher JS. A BPS patcher refuses the wrong starting ROM, so an error here means step 1 doesn't match. The result has CRC32 `1F90D684` for FireRed and `46D3F144` for Emerald.
 3. **Randomize with the matching randomizer.** Use `randomizer_natdex_1.2.2_abilities.jar` with the patched ROM and your usual Nat. Dex settings file. If the Tracker makes your ROMs for you (Quickload), point its randomizer and source ROM settings at this jar and the patched ROM. The randomizer needs Java.
-4. **Add the Tracker extension.** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too.
+4. **Add the Tracker extension (FireRed).** Copy `NatDexSplitCategories.lua` into the Tracker's `extensions` folder and enable it, with CyanSMP64's NatDexExtension enabled too. It was made for the FireRed patch and hasn't been tried on Emerald yet.
 5. **Start a new game.** Save states made on the unpatched ROM won't work.
 
 ### The randomizer
 
-The patch moves the game's data, so the standard Nat. Dex randomizer can't read the patched ROM. The one here is that same randomizer, changed to read the patched ROM and to hand out the moves and items the patch adds.
+The patch moves the game's data, so the standard Nat. Dex randomizer can't read a patched ROM. The one here is that same randomizer, changed to read both patched ROMs and to hand out what the patch adds.
 
-- Use it only with the patched ROM. It no longer reads an unpatched FireRed 1.1 or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
+- **Abilities:** it hands out the abilities the patch implements. Before this version it only handed out the 77 abilities from the original games. It still never hands out Forecast, Cacophony, Hunger Switch (which only does something on Morpeko) and the seven abilities that are still placeholders: Honey Gather, Multitype, RKS System, Ball Fetch, Commander and two unnamed ones.
+- **Moves and items:** it hands out the 482 moves, the 50 held items and the Exp. Candies.
+- **Your settings still apply.** A settings file that bans trapping or negative abilities bans them among the new ones too.
+- Use it only with the patched ROMs. It no longer reads an unpatched FireRed 1.1, Emerald or Nat. Dex 1.2.2 ROM, so keep your original randomizer for those.
 - It is a modified copy of the Universal Pokemon Randomizer ZX build that ships with NatDexExtension, shared under the same GPL-3.0 license. The exact changes are listed in the [folder's README](optional/natdex-abilities-patch/README.md).
 
 ### The Tracker extension
@@ -404,7 +433,9 @@ It does nothing on a ROM without the patch, so it is safe to leave enabled.
 
 ### Before you use it
 
-- **It has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
+- **The FireRed patch has only been tested in single battles.** In doubles, a few animation effects aimed at a partner Pokémon draw on the main target instead.
+- **The Emerald patch is new.** It was tested in an emulator test bench: the same battle checks as FireRed, every move used once, the bag and Exp. Candies, and one double battle. It hasn't had a full playthrough, and the Battle Frontier, link battles and contests are untested.
+- **The FireRed patch was updated on 28 November 2026.** Five move animations (Thunderous Kick, Double Shock, Hurricane, Jungle Healing and one Fickle Beam variant) asked for a battle background the game doesn't have; they now use ones it has. A ROM made with the earlier patch (CRC32 `EBD4339B`) still works with the new randomizer.
 - **It is an unofficial fan modification.** It isn't made or supported by CyanSMP64 or the Nat. Dex project, so please don't report its bugs to them. Report them here instead.
 - **It is a patch, not a game.** No ROM is included or will be. You supply your own game file.
 
